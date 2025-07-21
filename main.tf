@@ -1,6 +1,3 @@
-# Copyright (c) HashiCorp, Inc.
-# SPDX-License-Identifier: MPL-2.0
-
 provider "aws" {
   region = var.region
 
@@ -21,7 +18,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.19.0"
 
-  name                 = "${random_pet.random.id}-education"
+  name                 = "${random_pet.random.id}-acfaria"
   cidr                 = "10.0.0.0/16"
   azs                  = data.aws_availability_zones.available.names
   public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
@@ -29,17 +26,17 @@ module "vpc" {
   enable_dns_support   = true
 }
 
-resource "aws_db_subnet_group" "education" {
-  name       = "${random_pet.random.id}-education"
+resource "aws_db_subnet_group" "acfaria" {
+  name       = "${random_pet.random.id}-acfaria"
   subnet_ids = module.vpc.public_subnets
 
   tags = {
-    Name = "${random_pet.random.id} Education"
+    Name = "${random_pet.random.id} acfaria"
   }
 }
 
 resource "aws_security_group" "rds" {
-  name   = "${random_pet.random.id}-education_rds"
+  name   = "${random_pet.random.id}-acfaria_rds"
   vpc_id = module.vpc.vpc_id
 
   ingress {
@@ -57,8 +54,8 @@ resource "aws_security_group" "rds" {
   }
 }
 
-resource "aws_db_parameter_group" "education" {
-  name   = "${random_pet.random.id}-education"
+resource "aws_db_parameter_group" "acfaria" {
+  name   = "${random_pet.random.id}-acfaria"
   family = "postgres16"
 
   parameter {
@@ -77,12 +74,11 @@ ephemeral "random_password" "db_password" {
 }
 
 locals {
-  # Increment db_password_version to update the DB password and store the new
-  # password in SSM.
+  # Increment db_password_version to update the DB password and store the new password in SSM.
   db_password_version = 1
 }
 
-resource "aws_db_instance" "education" {
+resource "aws_db_instance" "acfaria" {
   identifier             = "${var.db_name}-${random_pet.random.id}"
   instance_class         = "db.t3.micro"
   allocated_storage      = 5
@@ -92,15 +88,16 @@ resource "aws_db_instance" "education" {
   username               = var.db_username
   password_wo            = ephemeral.random_password.db_password.result
   password_wo_version    = local.db_password_version
-  db_subnet_group_name   = aws_db_subnet_group.education.name
+  db_subnet_group_name   = aws_db_subnet_group.acfaria.name
   vpc_security_group_ids = [aws_security_group.rds.id]
-  parameter_group_name   = aws_db_parameter_group.education.name
+  parameter_group_name   = aws_db_parameter_group.acfaria.name
   publicly_accessible    = true
   skip_final_snapshot    = true
+  # storage_encrypted      = var.db_encrypted
 }
 
 resource "aws_ssm_parameter" "secret" {
-  name             = "/education/database/${var.db_name}/password/master"
+  name             = "/acfaria/database/${var.db_name}/password/master"
   description      = "Password for RDS database."
   type             = "SecureString"
   value_wo         = ephemeral.random_password.db_password.result
