@@ -11,18 +11,20 @@ output "rds_hostname" {
 output "rds_port" {
   description = "RDS instance port."
   value       = aws_db_instance.db_instance.port
-  sensitive   = true
 }
 
 output "rds_dbname" {
   description = "RDS instance database name."
   value       = var.db_name
-  sensitive   = true
 }
 
 output "rds_username" {
   description = "RDS instance root username."
   value       = aws_db_instance.db_instance.username
-  sensitive   = true
 }
 
+output "rds_password" {
+  description = "RDS instance root password."
+  value       = aws_db_instance.db_instance.password_wo
+  sensitive   = true
+}
