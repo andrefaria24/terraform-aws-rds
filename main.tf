@@ -1,24 +1,26 @@
 provider "aws" {
   region = var.region
-
-  default_tags {
-    tags = {
-      HashiCorpLearnTutorial = "no-code-modules"
-    }
-  }
 }
 
 provider "random" {}
 
 data "aws_availability_zones" "available" {}
 
-resource "random_pet" "random" {}
+resource "random_string" "random_str" {
+  length  = 6
+  special = false
+}
+
+resource "random_integer" "random_int" {
+  min = 3
+  max = 3
+}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.19.0"
+  version = "5.21.0"
 
-  name                 = "${random_pet.random.id}-acfaria"
+  name                 = "${random_string.random_str.id}-${random_integer.random_int.id}"
   cidr                 = "10.0.0.0/16"
   azs                  = data.aws_availability_zones.available.names
   public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
@@ -26,17 +28,17 @@ module "vpc" {
   enable_dns_support   = true
 }
 
-resource "aws_db_subnet_group" "acfaria" {
-  name       = "${random_pet.random.id}-acfaria"
+resource "aws_db_subnet_group" "db_subnet_group" {
+  name       = "${random_string.random_str.id}-${random_integer.random_int.id}"
   subnet_ids = module.vpc.public_subnets
 
   tags = {
-    Name = "${random_pet.random.id} acfaria"
+    Name = "${random_string.random_str.id}-${random_integer.random_int.id}"
   }
 }
 
 resource "aws_security_group" "rds" {
-  name   = "${random_pet.random.id}-acfaria_rds"
+  name   = "${random_string.random_str.id}-${random_integer.random_int.id}"
   vpc_id = module.vpc.vpc_id
 
   ingress {
@@ -54,8 +56,8 @@ resource "aws_security_group" "rds" {
   }
 }
 
-resource "aws_db_parameter_group" "acfaria" {
-  name   = "${random_pet.random.id}-acfaria"
+resource "aws_db_parameter_group" "db_param_group" {
+  name   = "${random_string.random_str.id}-${random_integer.random_int.id}"
   family = "postgres16"
 
   parameter {
@@ -78,8 +80,8 @@ locals {
   db_password_version = 1
 }
 
-resource "aws_db_instance" "acfaria" {
-  identifier             = "${var.db_name}-${random_pet.random.id}"
+resource "aws_db_instance" "db_instance" {
+  identifier             = "${var.db_name}-${random_string.random_str.id}"
   instance_class         = "db.t3.micro"
   allocated_storage      = 5
   apply_immediately      = true
@@ -88,16 +90,16 @@ resource "aws_db_instance" "acfaria" {
   username               = var.db_username
   password_wo            = ephemeral.random_password.db_password.result
   password_wo_version    = local.db_password_version
-  db_subnet_group_name   = aws_db_subnet_group.acfaria.name
+  db_subnet_group_name   = aws_db_subnet_group.db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds.id]
-  parameter_group_name   = aws_db_parameter_group.acfaria.name
+  parameter_group_name   = aws_db_parameter_group.db_param_group.name
   publicly_accessible    = true
   skip_final_snapshot    = true
   # storage_encrypted      = var.db_encrypted
 }
 
 resource "aws_ssm_parameter" "secret" {
-  name             = "/acfaria/database/${var.db_name}/password/master"
+  name             = "/database/${var.db_name}/password/master"
   description      = "Password for RDS database."
   type             = "SecureString"
   value_wo         = ephemeral.random_password.db_password.result
