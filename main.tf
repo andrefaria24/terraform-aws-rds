@@ -8,6 +8,7 @@ data "aws_availability_zones" "available" {}
 
 resource "random_string" "random_str" {
   length  = 6
+  numeric = false
   special = false
 }
 
