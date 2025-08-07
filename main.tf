@@ -72,15 +72,20 @@ resource "aws_db_parameter_group" "db_param_group" {
   }
 }
 
-ephemeral "random_password" "db_password" {
+resource "random_password" "db_password" {
   length  = 16
   special = false
 }
 
-locals {
-  # Increment db_password_version to update the DB password and store the new password in SSM.
-  db_password_version = 1
-}
+# ephemeral "random_password" "db_password" {
+#   length  = 16
+#   special = false
+# }
+
+# locals {
+#   # Increment db_password_version to update the DB password and store the new password in SSM.
+#   db_password_version = 1
+# }
 
 resource "aws_db_instance" "db_instance" {
   identifier        = "${var.db_name}-${random_string.random_str.id}"
@@ -90,7 +95,7 @@ resource "aws_db_instance" "db_instance" {
   engine            = "postgres"
   engine_version    = "16"
   username          = var.db_username
-  password          = ephemeral.random_password.db_password.result
+  password          = resource.random_password.db_password.result
   # password_wo            = ephemeral.random_password.db_password.result
   # password_wo_version    = local.db_password_version
   db_subnet_group_name   = aws_db_subnet_group.db_subnet_group.name
@@ -102,9 +107,10 @@ resource "aws_db_instance" "db_instance" {
 }
 
 resource "aws_ssm_parameter" "secret" {
-  name             = "/database/${var.db_name}/password/master"
-  description      = "Password for RDS database."
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.db_password.result
-  value_wo_version = local.db_password_version
+  name        = "/database/${var.db_name}/password/master"
+  description = "Password for RDS database."
+  type        = "SecureString"
+  value       = resource.random_password.db_password.result
+  # value_wo         = ephemeral.random_password.db_password.result
+  # value_wo_version = local.db_password_version
 }
