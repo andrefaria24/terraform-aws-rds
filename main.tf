@@ -10,6 +10,7 @@ resource "random_string" "random_str" {
   length  = 6
   numeric = false
   special = false
+  upper   = false
 }
 
 resource "random_integer" "random_int" {
