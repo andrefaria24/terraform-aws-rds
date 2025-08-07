@@ -83,15 +83,16 @@ locals {
 }
 
 resource "aws_db_instance" "db_instance" {
-  identifier             = "${var.db_name}-${random_string.random_str.id}"
-  instance_class         = "db.t3.micro"
-  allocated_storage      = 5
-  apply_immediately      = true
-  engine                 = "postgres"
-  engine_version         = "16"
-  username               = var.db_username
-  password_wo            = ephemeral.random_password.db_password.result
-  password_wo_version    = local.db_password_version
+  identifier        = "${var.db_name}-${random_string.random_str.id}"
+  instance_class    = "db.t3.micro"
+  allocated_storage = 5
+  apply_immediately = true
+  engine            = "postgres"
+  engine_version    = "16"
+  username          = var.db_username
+  password          = ephemeral.random_password.db_password.result
+  # password_wo            = ephemeral.random_password.db_password.result
+  # password_wo_version    = local.db_password_version
   db_subnet_group_name   = aws_db_subnet_group.db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds.id]
   parameter_group_name   = aws_db_parameter_group.db_param_group.name
