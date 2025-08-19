@@ -62,11 +62,6 @@ resource "aws_db_parameter_group" "db_param_group" {
   name   = "${random_string.random_str.id}-${random_integer.random_int.id}"
   family = "mysql5.6"
 
-  parameter {
-    name  = "log_connections"
-    value = "1"
-  }
-
   lifecycle {
     create_before_destroy = true
   }
