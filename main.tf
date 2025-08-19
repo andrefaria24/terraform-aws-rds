@@ -60,7 +60,7 @@ resource "aws_security_group" "rds" {
 
 resource "aws_db_parameter_group" "db_param_group" {
   name   = "${random_string.random_str.id}-${random_integer.random_int.id}"
-  family = "postgres16"
+  family = "mysql5.6"
 
   parameter {
     name  = "log_connections"
@@ -93,7 +93,7 @@ resource "aws_db_instance" "db_instance" {
   allocated_storage = 5
   apply_immediately = true
   engine            = "mysql"
-  engine_version    = "16"
+  engine_version    = "5.7"
   username          = var.db_username
   password          = resource.random_password.db_password.result
   # password_wo            = ephemeral.random_password.db_password.result
