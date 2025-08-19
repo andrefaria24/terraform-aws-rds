@@ -92,7 +92,7 @@ resource "aws_db_instance" "db_instance" {
   instance_class    = "db.t3.micro"
   allocated_storage = 5
   apply_immediately = true
-  engine            = "postgres"
+  engine            = "mysql"
   engine_version    = "16"
   username          = var.db_username
   password          = resource.random_password.db_password.result
